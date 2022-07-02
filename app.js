@@ -13,20 +13,23 @@ const posts = [];
 const app = express();
 
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 
 app.get("/", (req, res) => {
-  res.render("home", {homeStartingContent, posts});
+  res.render("home", {
+    homeStartingContent,
+    posts: truncatePostsContents(posts)
+  });
 })
 
 app.get("/about", (req, res) => {
-  res.render("about", {aboutContent});
+  res.render("about", { aboutContent });
 })
 
 app.get("/contact", (req, res) => {
-  res.render("contact", {contactContent});
+  res.render("contact", { contactContent });
 })
 
 app.get("/compose", (req, res) => {
@@ -37,7 +40,7 @@ app.get("/posts/:postTitle", (req, res) => {
   const requestedPostTitle = _.lowerCase(req.params.postTitle);
   for (let post of posts) {
     if (_.lowerCase(post.title) === requestedPostTitle) {
-      res.render("post", {postTitle: post.title, postBody: post.content})
+      res.render("post", { postTitle: post.title, postBody: post.content })
     }
   }
 })
@@ -53,6 +56,19 @@ app.post("/compose", (req, res) => {
 
 
 
-app.listen(3000, function() {
+app.listen(3000, function () {
   console.log("Server started on port 3000");
 });
+
+function truncatePostsContents(posts) {
+  return posts.map(post => {
+    return {
+      title: post.title,
+      content: truncate(post.content, 100)
+    }
+  })
+}
+
+function truncate(str, n) {
+  return (str.length > n) ? str.substr(0, n - 1) + " ..." : str;
+};
